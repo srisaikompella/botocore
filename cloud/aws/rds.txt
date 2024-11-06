@@ -1,0 +1,48 @@
+benifits of db:
+---------------
+you can focus on writing your app code and not worryinmg about administering the db. (high agility and adaptability) 
+lower risk of hdw failures and downtime. 
+greater disaster recovery caps when it comes to your db and data resides within your db.
+best security practices.
+reduced dep on internal IT resources for db mgmt and support.
+
+
+instance types:
+---------------
+1) gem purpose 2) mem optimised
+1st type offers a combination of compute network mem. perfect balance of compute n/w mem.
+2nd type instances with more mem. when we want to process huge data sets in mem.
+
+
+deployment type:
+----------------
+1) single az deployment -> get deployed in just one AZ. just maitains single copy of data. in a event of failure, all the data will be lost. best for dev and staging env for pocs. comes at low cost.offers high latency.
+2) multi az deployment -> replicates your primary rds instance to a standby instance in diff az. now we got extra redundancy. if one az goes down the other instance is still avalaible.
+3) read replicas -> creates copies of db instance that can be used to distribute read traffic. so your data is copied b/w two instances and it can load balance requests b/w two potentially not overloading the single instance. it can write the data to only instance. 
+
+a read replica is read only instance of your primary db instance.
+reduce the load on primary db by routing queries from apps to read replica. 
+elastically scale out beyond the cap of a single db for read heavy workloads.
+promotes a read replica to a standalone instance as a disaster recovery soln if the primary db instance fails.
+multi az deployment have multiple readers spread across multiple azs in the same/diff reg. this is called cross region read replicas. let's say if we have a db in north america region and if we have users to access that db from africa, then this might cause a latency because the traffic has to make it its way to america all the way from africa. and so what we could do is we can make use of read replica and setup it in african regio n then we can setup a secure communicate channel to replicate the data over to read replica. 
+
+synchronous replication means the data is writeen to primary and replica simultaneously. asynchronous means the data is written to prinary first and then the data will be copied to replica later. replication b/w standby and primary is asynchronous and repliation between read replicas and primary is synchronous,
+
+
+Blue green deployment:-
+
+In the blue green deploy, we will have a cluster (ex: one primary and read replica) and our users will be utilising the cluster.  now let's say over time we need to make some changes either to our db/app, so we setup another env. we setup a secondary db cluster, where we can perform all the necessary testing. this is just to make sure that all the changes we made to the app/db didn't break the functionality of app. we can have all the data of our blue env get replicated over to green env. our green env has same exact data thats in blue env. sine the data is synced b/w the 2, we can move our clients essentialy to the green env. we can make the greem env our prod env. 
+
+Key points:
+ test db changes in a safe staging env without affecting prod env. 
+ the swith over b.w envs typically takes under a min, with no data loss and no need for app changes. the setup is expensive because we habe 2 clyster running at the same type.
+
+storage types:
+
+gen purpose ssd:  offers cost effective storage. ideal for broad range of workloads running on medium sized db instances. for dev and test env.
+provisioned iops ssd: iops intensive workloads. best suited for db workloads that involves high amount of read write ops. it is best suited for prod env. min of 100GB to 16TB.
+magnetic: offers slower performance compared to abvoe 2 types.
+
+
+db parameter grps: settings that control the behaviour of rds instance. performance, sec, reosurce allocation can be controlled using parmater grps. 
+

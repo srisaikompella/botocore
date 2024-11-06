@@ -1,0 +1,20 @@
+cloudwatch:
+
+You have been tasked to make sure to build a centralised sys where you can configure alarams, notifications, logging and whole observability sys in aws.
+It is more than just a monitoring soln. It is an integral part of any devops professional.
+It allows you to collect and access  all your performance and operational data in the forms of logs, metrics from a single platform. This capability is crucial in maintaining the health of your application and quicky diagnosing any issue that may arise.
+Full stack observability:
+
+It is essential to have a complete view of your apps and infra. Cloud watch enables this by providing detailed insight into every layer of stack. ( from underlyigng infra to app running on top of it.)
+
+1) Alarms: You can set thresholds and get notified when app or infra performamce deviates from what you have defined as normal. This is critical for proactive issue resolution.
+2) Rules: Allows you to define actions based on event patterns. This means that you can automate responses to particular events, like triggering a lambda fn when a specific event pattern is detected.
+3) Real User Monitoring: Helps you understand apps performance,  user behaviour by collecting data from the user's session. This is crucial/invaluable in improving the user's experience,
+4) Metrics Insight:  provides advanced analytics for your metrics. allowing to perform complex queries to understand the operational health of your service better. 
+5) Event: 2 types -> time based, event-driven
+time-based - lets you schedule actions at specific times like taking a backup daily at midnight.
+eveent-driven - these are activated by changes in your aws env such as instance state change.
+6) Logs - Logs are not just about storing data. They are about insights, you can use logs  to track apps and infra performance, set alarms and event trigger events. 
+7) Cloud watch synthetics: Allows you to configure canaries to monitor your endpoinys and apis continusously. canaries are scripts that follow the same routes and perform same actions as customer which helps ensure your user experience is consitent and reliable. 
+
+Observability is not just about collecting data and ots about making the data actionable.

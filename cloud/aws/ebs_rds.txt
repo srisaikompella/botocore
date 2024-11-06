@@ -1,0 +1,23 @@
+Ebs happens to represent the equivalent of a hard disk to an ec2 instance. It implements what we call block store because once it is mounted and formatted and we begin to use it, the utilisation actually happens in blocks. ebs offer persistent storage for ec2 instance. ebs volumes are network attach and persistent data independently from the life of instance. they are highly avaialble and reliable. they can be used a boot partition / attach to ec2 instance as a std block device. 
+
+
+
+Challenges for relational databases:
+server maintainence 
+software patches and installations
+database backups high availabiltiy
+data security
+os installation and patching.
+
+
+rds is an aws managed service. 
+aws manages:
+os installation and patches
+database software installation and patches
+database backups
+high availability
+scaling
+power and racking and stacking servers
+server maintainence
+
+offloading these ops to aws rds reduces your operational workload and costs that are associated with your relational db. 

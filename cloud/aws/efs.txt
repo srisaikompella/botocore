@@ -1,0 +1,23 @@
+EFS is a simple scalable set and forget cloud native filesys. It provides us the capabilities to run our app workloads needing shared filesys storage. 
+
+EFS is simple and highly reliable:
+EFS is elastic, It can automatically scale up and down as you add or remove files from it. it can scale upto petabytes in size. EFS is highly durable and available. It is designed to provide 119's of durability and 99.99% of availability. 
+
+EFS is serverless shared storage: you don't need to provision or manage any infra or capacity. As your workload scales up so does your filesys. EFS can support tens of thousands of concurrent  clients no matter the type. These could be traditional ec2, containers (eks, ecs, fargate). 
+
+EFS is performant and cost optimized: provides low, consitent latencies and provides 10s(tens) of GB/s of throughput and 500,000 iops. efs provides you wiht automatic cost optimization. with its native lifecycle management capability, files that are not using frequently, will be automatically moved from std storage class to a lower cost infrequent access SC.
+
+
+-- To achieve these levels of avail, dura, all files and dirs are redundantly stored across multiple AZs. When you write the data to efs, the write is not acknowledged until the data is durably written across all azs. efs can withstand a full loss of single Az while still providing the same quality of svc in other AZs. This kind of redudancy is transformation for business that are used to operate with one primary data center. Now taking the durability to the next level for data protection, you can back up your efs with aws backup which again protects data by storing across azs.
+
+performance modes: 
+gen purpose(recommended for majority of workloads) (default)
+- for gen purpose file workloads as well as latency sensitive apps. 
+- advantage is lowest latencies for file ops. tradeoff/disadvan is limit of 35k read and 7k write per sec.
+ / max-io  (recommended for scale out workloads) - large scale out, data heavy workloads.
+- advantage is virtually have unlimited ability to scale out throughput / IOPS but slightly higher latencies per filesystem. 
+
+throughput modes: ( burst mode is best for workloads as many workloads throughputs demands are spiky in nature )
+bursting:(default) good for workloads with varying throughput demands. It allows you to burst to higher levels of throughput, double your baseline throughput for a short period of time. advantage is it scales automatically as filesys grows. tradeoff is throughput is tied to storage of the filesys. 
+provisioned: is best for workloads that require higher and consistent throughput. you can define the throughput but tradeoff is you are charged seperately for throughput and storage.
+ 

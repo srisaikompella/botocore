@@ -1,0 +1,34 @@
+EKS procedure:
+--------------
+1) Create EKS IAM role
+2) Create vpc for worker nodes
+3) Create EKS cluster
+4) kubectl to conn to cluster
+5) Create EC2 IAM role for node group
+6) Create node grp and attach to eks cluster
+7) Configure auto scaling
+8) Deploy app to test the deployment
+
+
+1) Create an IAM role in our account and assign it to the eks managed by aws to allow and manage components on our behalf in our aws account. As part of role concept in aws , you can give roles from your account to another aws acc, so that services in aws acc can access and manage services in your aws acc.
+AWSEKsclusterploicy -> main policy needed that provides eks permission to ec2, elb, iam, asg, kms. [ create role -> select eks as svc ( trusted entity ) -> Eks clusterpolicy ]
+what eks is allowed to do in our aws acc is defined by the role we attached.
+
+2) There is a default vpc that aws automatically creates in every region. But, eks needs a specific configuration of n/w for it to work without problems. k8s has its own n/w rules and aws has its own n/w rules. Default vpc is not optimised for it. When we create a vpc in order to create eks cluster, this is a n/w that is going to run our worker nodes. it is not the vpc that we are creating for eks/master nodes rather for our worker nodes.
+
+worker nodes in our vpc in diff subnets need to have a set of firewall configurations ( open all the ports for master <-> node communication ) that is necessary for master nodes to connect with worker nodes. Eks is running on diff vpc which is managed byaws outside of our aws and worker ndoes in our aws acc. Best practice is to configure pub and priv subnets. When you create k8s svc of type LB it is smart enough and creates the external LB in a public subnet. We have to provide a role to give k8s permission to change vpc configs to open port on our behalf in our vpc. lets say we create a node port svc then worker node needs to open a port so that it can be directly accessible on that port.
+
+API server is the entrypoint to the cluster. If you want to access / talk to kubernetes cluster externally enable public endpoint. private allows worker nodes to communicate with the cluster endpoint from within your vpc. meaning it allows the master and worker to communicate with each other through our vpc.	n/w int will be created in our vpc that would enable traffic from our worker nodes through vpc directly to master nodes.
+
+Cluster endpoint access: public, pub+pvt, pvt 
+1) pub+pvt:: cluster endpoint is accessible from outside of your vpc. worker node traffic to the endpoint will stay within your vpc.
+2) pub: cluster endpoint is accessible from outside of your vpc.worker nodes also need to talk to the master nodes / cluster end through the pub Ip. They will have to leave the vpc they are in, take the pub route just like the other svcs.
+3) priv: worker nodes can acess master nodes through its vpc. endpoint is not accessible publicly. need to install kubectl on one of the worker node to be able to apiserver.
+
+
+3) Create an eks cluster: specify the name, k8s version, cluster role, endpoint access,vpc, subnets, sg, enable logs for process on master processses.
+
+4) nodes are the ec2 instances that we have to manage ourselves, fargate gives you managed worker nodes on top of managed master nodes.
+the reason why we create node grp and not individual ec2 instances is because if you have 100 workers nodes you want to have in your cluster it is impractical to create ec2 instances one by one hence you need to group them.  node group runs worker processes.kubelet is the main process for scheduling the pods, getting all the resources and assigning it to the pod and communicate with other aws svcs. we need to give permission to kubelet on the worker node to execute all these tasks. we create a role and attach it to node grp. 
+
+[ Iam role-> ec2(trusted entity)kubelet run ons ec2 / allow all processes on ec2 to inherit this role. -> 1)  EKsworkernode policy ( ec2 {list,read} , eks{read}) 2) EKScontainerRegsitryReadonly 3) EKsCNiPolicy ( ec2 {list,read,write,tagging}) -> to modify the IP add config on your nodes. allows cni to list describe modify eni on your behalf.

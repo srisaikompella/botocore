@@ -1,0 +1,52 @@
+aws load balanceR:-
+
+
+1. Vertical scaling:- process of increasing the capacity of a server by adding more processing power like storage, cpu, ram.
+
+2. Horizontal scaling:- process of adding multiple instances of your application which could share load accross these systems.
+
+High availability:-
+
+the ability to make your application more available to your customers.
+
+Your multiple instances will be hosted across multiple regions and azs within regions in aws. so that, if one of the az fails, you will still be able to access your application through the other az.
+
+Hence we use loadbalancer to distribute the incoming traffic across multiple instances across regions. thus ensuring high availability. Helps you to balance the load across instances hence the name loadbalancer.
+
+it helps you to have single point of access using dns.
+
+helps you to monitor the performance of your app using cloudwatch metrics.
+
+Features of aws lb:
+1. Aws managed:
+- it is aws managed means it will be up and running all the time. 
+- aws has to take care of the upgrades and maintainence.
+- it gives users the configurability to ensure users can configure it as per their req.
+2. Reduces cost
+- Very less exp to setup aws elb as the underlying infra is completely maintained by aws and hence the operating cost would be less than what it would be if you setup your own loadbalancer.
+3. Service offerings:
+
+- can integrate load balancer with ec2, rds, autoscaling, vpc, route53.
+
+Health checks:
+
+1. health checks helps us to determine if the target is ready to accept the incoming requests or not.
+2. loadbalancer use passive and active health checks to determine whether is target is available to handle requests.
+3. loadbalancer node routes requests only to the healthy targets in its az. cross zone loadbalancing enables it to route requests to all the targets in all the availability zones.
+
+Active health check:-
+
+1. loadbalancer periodically sends a request to each registered target to check its status.
+2. after health check is completed, it  closes the connection that was established for health check.
+ Passive Health check:-
+ 1. Loadbalancer observes how targets  respond to connections and ensures lb to detect the unhealthy target before it is reported as unhealthy by active health checks.
+ 2. you cannot disable, configure or monitor passive health checks and it is not supported for UDP.
+
+Health checks are done on the URl routes or ports, ex: /health, expects 200  response to term it as healthy else unhealthy.
+
+
+Listener:- process/rule  that checks for conn req. using the protocol and port that you configure.
+target grp:- this is used to route req to one or more reg targets.
+
+when you create a listner rule, you specify a target grp and conditions. when a condition is met, traffic is forwarded to corresponding target grp.
+
