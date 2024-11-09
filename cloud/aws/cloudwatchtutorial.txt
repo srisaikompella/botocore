@@ -18,3 +18,95 @@ eveent-driven - these are activated by changes in your aws env such as instance 
 7) Cloud watch synthetics: Allows you to configure canaries to monitor your endpoinys and apis continusously. canaries are scripts that follow the same routes and perform same actions as customer which helps ensure your user experience is consitent and reliable. 
 
 Observability is not just about collecting data and ots about making the data actionable.
+
+What is metrics and metric dimensions?
+
+Metric is quantitative measurement of a resource and its app like CPu utilisation, mem usage, disk io or any other kind of metrics emitted by rds.
+
+metric dimension defines where this particular belongs to. ( gives additional info about a metric ).
+
+incase of rds:
+
+metrics: cpu utilisation, db conn, query exec time, transactions, errs, disk io, mem usage, n/w throughput.
+metric dimensions: db identifier, db instance class, engine, storage type, availability zone.
+
+built-in/custom metrics: metrics we get out of the box. it natively integrates with 70 svcs collecting above mentioned metrics and these are go to metrics for resource health and performance. Whuke aws provides robust set of builtin metrics , there are times when you need to go beyond.  This is where custom metrics come into picture. These are the metrics you create. These are originating from your app. 
+
+usage metrics: these track the usage of aws resource against svc code( service quotas ).  These helps usto manage resource effectively and stay within the operational limit.
+
+Metrics granularity and aggregation:
+
+Are we collecting the dara at a certain freq? Are we aggregating the data at a certain freq?
+'Metric granularity referes to the freq at which cloudwatch collects and stores metrics data.
+the more granular the data the finer details we observe. With fine grained metrics we can set more responsive alarms and detailed dashbaord and perform indepth analysis to trobuleshoot and optmisie our sys.
+
+metrics aggregation is thr process of combining the metric data points into a single data point. This helps us to set a pattern, set anamoly detection on sys metrics. 
+
+Terminologies we need to rem:
+
+alarm name: unique identifier. This is label you give for the alarm /criteria you are monitoring. 
+metrics: specific measurement
+statistic: avergae, sum, min, max, sample count. This defines the aggregation of your metric data point.
+Threshold: the value at which alram trigger.
+period: This defines the duration over which metric is evaluated. you could set this to 1 min or several hrs. 
+evaluation period: specifies the no of consecutive periods  the metric must breach the threshold before the alarm state change/
+datapoints: how many of evolution periods must breach the threshold to trigger the alarm.	
+comparision op: This tells us if the metrics is going above/below the threshold is it not eq to particular val or eq to val.
+alarm actions: this is where you define what happens when your alarm state is reached. whether it's sending a notification/initiating autoscaling action/triggering labmda fn.
+
+Alarm states:
+1) Ok state: The state in which the threshold has not been reached. the metric is within the threshild.
+2) alarm state: the state in which the threshold has been reached.the metric is outside of the threshild.
+But at what point will the alarm move from okay state to alarm state? 
+This is called insuff data state. The state at which the threshold has been reached but the alarm is waiting to collect enough data points that we have defined before actually performing the actions of alarm.
+The cpu utilisation is going from 20 to 80 it has reached the threshold. will it trigger the alert already? no. It will wait for a particular time let's say 5 mins to actually see if the cpu utilisation continues to be above the threshold. 
+
+In other words, you can say insufficient dara state is that the alarm has just started, the metric is not available or suff data is not available for the metric to determine the alarm state. 
+
+conditions:
+anamoly detection: WHERE cloud watch is going to check for the historic data of cpu utilisation  and then create an alert if there is any anamoly.
+static: where we are going to get an alert when the cpu utilisation crosses a particular threshold that we have set. 
+
+
+---
+In simple terms, the period in Amazon CloudWatch refers to the length of time over which a specific metric is aggregated and evaluated. It's like setting a time window to look at your data.
+
+For example, if you set a period of 5 minutes, CloudWatch will group and analyze the metric data points collected during each 5-minute interval. This helps in understanding trends or patterns over that specific time frame.
+
+Composite alarms:sidered depends on the frequency of metric dat
+-----------------
+Image you have a autoscaling group and it is designed to adjust the no of ec2 instances in response to the changing load. Each of these instance is a potential point of failure. Monitoring eahc of the instance health is crucial. Typicall what would we do?
+ We would setup individual alarams for each instance. However this can lead to flood of notifications for us.
+ Think of composite alarms as a chief of monitoring that takes in signals from multiple alarms including ec2 instance alarms that you have set.
+These alarms can be set with logical conditions such as OR. So instead of reacting to every individual alarm a composite alarm can be set to trigger only when certain conditions accross multiple alarms are met. This approach simplifies the notification process. You get a more meaningful alert when combined criteria is met, indicating a true issue that requires your attention. Reduces alarm noise and enables detection of specific scenarios.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
