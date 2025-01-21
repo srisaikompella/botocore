@@ -80,14 +80,177 @@ Image you have a autoscaling group and it is designed to adjust the no of ec2 in
  Think of composite alarms as a chief of monitoring that takes in signals from multiple alarms including ec2 instance alarms that you have set.
 These alarms can be set with logical conditions such as OR. So instead of reacting to every individual alarm a composite alarm can be set to trigger only when certain conditions accross multiple alarms are met. This approach simplifies the notification process. You get a more meaningful alert when combined criteria is met, indicating a true issue that requires your attention. Reduces alarm noise and enables detection of specific scenarios.
 
+Cloudwatch Logs:
+---------------
+1) Offers you the ability to monitor, store and access your log files from your apps and not just that from other aws svcs too. 
+2) Agents are the key tools to collect logs and metrics from your apps which can be customized. Together, logs and agents form a dynamic duo empowering you to maintaining the health and efficieny of your app.
+
+Let;s suppose we have few apps running on aws and these apps sends logs. As we zoom in, you notice log stream. These are seq of log events gen by your app. for ex, /var/app_o1 captures log from a specific app dir. You can have multiple log streams associated with this app that is sending logs. A collection of log streams is called log group. for ex, the log grp for app_01 contains the log streams related to app1.  for app2, you have a seperate log grp and for app3 we have seperate log grp. How does this help us?
+If you want to debug app_01 you can go to log grp app1 and look into the resp log stream on what to debug.
+log stream: seq of events / timeline of events from a specific app. These events could be err msg, app access logs or performance data.
+log grp: collection of log stream / acts a repo for these log streams and can be thought of as a lib that organises these log streams in a chronological format. It is not just the storage space but it is a context that grps similar types of logs together under  a shared set of configs.
+each log grp in cloudwatch is a collection that can accomodate numerous log streams, all sharing the same retention, monitoring and access control settings.
+
+Log events:
+----------
+1) We have a app that generates log event. This event is stored as a log. Now will there be just one event here ? there will be collection of logs happening every sec based on the usage. How do you analyse these logs? logstream comes into picture. All log events are properly grouped based on timestamp and group of log streams form the log grp. How does it look like?
+{ "id": "xxx",
+  "timestamp": "unixEpoch",
+  "messgae": "user logged in",
+  "logGroupName": "/aws/ec2/my-ap",
+  "logStreamName": "2024/11/24/instance-i-<id>".
+  "source": "my-ap(instance name)",
+  "instanceId": "id"
+  "eventSource": "application"
+  "eventType": "userLogin"
+  "applicationVersion": "1.0.0"
+  "region": "us-east-1"
+}
+
+The above log happened when user has successfully logged in. There are other evetns such as passwd resers, falure login. Who has the ability to configure log events? This can be configured during your app developmemt. 
+Structured and unstructured log events: structured are like well organised files, They follow a specific format called JSON or key-value pair making them easily searchable and highly accessible. Unstructured, ex: err msgs and system diagnostic info which are rich in detail but makes it diff to parse and analyse and extract meaningful info.
+Immutability in log evetns: Once a log event has been sent to cloudwatch logs it is set in stone. It cannot be altered erased or modified ensuring that every piece of infois captured remains unchanged from the moment it is logged. if you want to delete a log event you have to delete the log stream or log grp. This immutabilitu is the bedrock of data reliability. BEcause it prevents tampering and accidental modification which are concerns for sec and compliance. The data you see is the data that was originally recorded. 	
+Do i have to send all logs to cloudwatch? Not required. If i end up sending all the logs events to cloudwatch, we ll be paying a lot of price. This is where pre-ingestion filtering comes into picture. It is a crucial process that allows you to filter and process log data where it originates on the client side. You have the power to decide which data makes it to cloudwatch and which doesn't right at the source of generation. This ensures that you are not just dumping all the data and selectively sending the information that is valuable.
+
+Metrics filters:
+----------------
+Allow you to extract info from your log data and transform into numerical metrics. There are basically 2 types of metrics filters:
+- Filter patterns: these filters match log events based on their text content. For ex, you create filter to match all the log events containing the string HTTP 404. I want to get alert if there are lot of http404 err. Now this type of filter, parses the log data into metrics. These metrics can be used for creating alarms. Once filkter has been created you can associate it to a log grp and then cloud watch starts publishing the metrics. 
+Real word exp: Avg response time of api req, monitor the no of login failures / hour, monitor avg disk utilisation on ec2 and no.of db error/min. 
+
+To push logs to aws cloudwatch:
+1) aws logs put-log-events  --log-group-name app-404-err-tracker --log-stream-name hostname --log-events file://events_all.json  => gets you the "nextSequenceToken"
+
+The thing is you have to set the proper filter in the cloudwatch. Go to log group and navigate to metrics filter in the console. After you set the metric filter, you have to specify the custom metric name and custom namespace name.
+  
+ The interval at which the default metrics in cloudwatch is 5 mins.  Imagine a usecase where this 5 min is not enough for you. Alos the defaukt logs are not enough to do in depth analysis. To get more fine grained metrics:
+Cloudwatch agent is a special pkg we'll have to install on our servers such as ec2 so that we will be able to send and push metrics and logs with much lesser interval ( i,e even with one-second interval )	
+On a broader sense, we will install cloudwatch agent on premises server, sebd these logs, convert these logs to metrics and then we wil be able to  setup minitoring and alarms on top of it.
+
+Features:
+1) Custom metrics: Agents are there to collect metrics of your app. On the flip side, defautl logs are mostly related to infra. ec2 by default offer cpu, network
+2) Logs collection: Collects and stream the logs to cloudwatch logs. They help us centralise the log mgmt. We are able to see the default metrics but we are not able to see the defailt logs automatically, agetn helps here.
+3) Higher resolution data: enables high resolution data ( 1 sec intervals )
+4) Pricing: first 10k metrics: $0.30for each /month ; next 750k metrics: $0.05 each/month per GB.
+   example: if you send 320 metrics, the monthly cost is $96 dollar. 
+5) restrictions and limits: agent skip events exceeding 256 kb. each log event should be max 256kb.  batch size limit: 1mb. Installation requirements: install agent via sys manager run cmd. 
+   
+Actions needed by ec2 when you want to push logs to cloudwatch:
+                    "cloudwatch:PutMetricData",
+                    "ec2:DescribeVolumes",
+                    "ec2:DescribeTags",
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogStreams",
+                    "logs:DescribeLogGroups",
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup"
+                    
+                    
+ {
+   "metrics": {
+     "namespace": "MyCustomNamespace",
+     "metrics_collected": {
+       "mem": { // mem metrics
+         "measurement": [
+           "mem_used_percent" // free, available. available_percent etc are some other measurements.
+         ],
+         "metrics_collection_interval": 1 // how often the metrics has to be colelcted.
+       },
+       "disk": {
+         "measurement": [
+           "used_percent"
+         ],
+         "resources": [
+           "/"
+         ]
+       }{
+        "logs":{
+                "logs_collected":{
+                        "files":{
+                                "collect_list":{
+                                {
+                                        "file_path": "/home/ubuntu/new.log",
+                                        "log_group_name": "test-log-grp",
+                                        "log_stream_name": "${instance_id}"
+                                }
+
+                        }
+                }
+        }
+}
+     },
+     "append_dimensions": {
+       "InstanceId": "${aws:InstanceId}"
+     }
+   }
+ }
 
 
+Start cloud watch :
+cd; sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:amazon-cloudwatch-agent.json
 
 
+Help Menu:
 
+        usage:  amazon-cloudwatch-agent-ctl -a
+                stop|start|status|fetch-config|append-config|remove-config|set-log-level
+                [-m ec2|onPremise|onPrem|auto]
+                [-c default|all|ssm:<parameter-store-name>|file:<file-path>]
+                [-s]
+                [-l INFO|DEBUG|WARN|ERROR|OFF]
 
+        e.g.
+        1. apply a SSM parameter store config on EC2 instance and restart the agent afterwards:
+            amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:AmazonCloudWatch-Config.json -s
+        2. append a local json config file on onPremise host and restart the agent afterwards:
+            amazon-cloudwatch-agent-ctl -a append-config -m onPremise -c file:/tmp/config.json -s
+        3. query agent status:
+            amazon-cloudwatch-agent-ctl -a status
 
+        -a: action
+            stop:                                   stop the agent process.
+            start:                                  start the agent process.
+            status:                                 get the status of the agent process.
+            fetch-config:                           apply config for agent, followed by -c. Target config can be based on location (ssm parameter store name, file name), or 'default'.
+            append-config:                          append json config with the existing json configs if any, followed by -c. Target config can be based on the location (ssm parameter store name, file name), or 'default'.
+            remove-config:                          remove config for agent, followed by -c. Target config can be based on the location (ssm parameter store name, file name), or 'all'.
+            set-log-level:                          sets the log level, followed by -l to provide the level in all caps.
 
+        -m: mode
+            ec2:                                    indicate this is on ec2 host.
+            onPremise, onPrem:                      indicate this is on onPremise host.
+            auto:                                   use ec2 metadata to determine the environment, may not be accurate if ec2 metadata is not available for some reason on EC2.
+
+        -c: amazon-cloudwatch-agent configuration
+            default:                                default configuration for quick trial.
+            ssm:<parameter-store-name>:             ssm parameter store name.
+            file:<file-path>:                       file path on the host.
+            all:                                    all existing configs. Only apply to remove-config action.
+
+        -s: optionally restart after configuring the agent configuration
+            this parameter is used for 'fetch-config', 'append-config', 'remove-config' action only.
+
+        -l: log level to set the agent to INFO, DEBUG, WARN, ERROR, or OFF
+            this parameter is used for 'set-log-level' only.
+
+ubuntu@ip-172-31-86-22:~$ cat new.json 
+{
+   "logs":{
+      "logs_collected":{
+         "files":{
+            "collect_list":[
+               {
+                  "file_path":"/home/ubuntu/new.log",
+                  "log_group_name":"test-log-grp",
+                  "log_stream_name":"${instance_id}"
+               }
+            ]
+         }
+      }
+   }
+}
+
+tail -f /opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log
 
 
 
