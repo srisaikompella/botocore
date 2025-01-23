@@ -79,4 +79,4 @@ Secure data handling: Before terminating an instance, securely transfer sensitiv
 
 Resource optimization: Perform dynamic resource deallocation or deregistration from external services to ensure clean decommissioning and optimize overall resource utilization.
 
-
+![lifecycle-hooks](asg-images/ASG-LIFECYCLE-HOOKS-WORKFLOW.png)
